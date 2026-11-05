@@ -5,7 +5,8 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'expert-panels-'));
 process.env.DATA_DIR=path.join(temp,'db');process.env.OUTPUT_DIR=temp;
-if(process.env.TEST_DATABASE_URL)process.env.DATABASE_URL=process.env.TEST_DATABASE_URL;else delete process.env.DATABASE_URL;
+// A blank value deliberately prevents .env or .env.local from loading a live connection.
+process.env.DATABASE_URL=process.env.TEST_DATABASE_URL||'';
 const {getDb,REPO_ROOT}=await import('./lib/db.mjs');
 const {migrate}=await import('./migrate.mjs');const {seed}=await import('./seed.mjs');const {run,commands,parseArgs,format}=await import('./panels.mjs');
 const {parseCsv}=await import('./lib/csv.mjs');const {page,table}=await import('./lib/render.mjs');
@@ -17,6 +18,7 @@ const fail=async(fn,re)=>{await assert.rejects(fn,re);checks++;};
 const day=n=>new Date(Date.now()+n*86400000).toISOString().slice(0,10);
 const child=(file,args=[])=>{const r=spawnSync(process.execPath,[path.join(REPO_ROOT,'scripts',file),...args],{cwd:REPO_ROOT,env:process.env,encoding:'utf8'});eq(r.status,0,r.stderr||r.stdout);return r.stdout;};
 try{
+ eq(db.mode,process.env.TEST_DATABASE_URL?'postgres':'pglite','tests cannot load an operational connection from .env');
  if(process.env.TEST_DATABASE_URL){const tables=await db.query("select tablename from pg_tables where schemaname='public'");if(tables.length)throw Error('TEST_DATABASE_URL must be an empty disposable database');}
  eq((await migrate(db)).ran.length,1);eq((await migrate(db)).ran.length,0);await seed(db);
  const before=(await db.query('select count(*)::int as n from audit'))[0].n;await seed(db);eq((await db.query('select count(*)::int as n from audit'))[0].n,before,'seed idempotence');
