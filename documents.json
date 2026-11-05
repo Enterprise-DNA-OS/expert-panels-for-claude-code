@@ -12,11 +12,11 @@
       },
       {
         "title": "Appointments",
-        "sql": "select code,expert,position,starts_on,ends_on,status,blockers from v_term_readiness where panel_id=$1 order by position,expert"
+        "sql": "select code,expert,position,starts_on,ends_on,status,coalesce(nullif(array_to_string(blockers,'; '),''),'No recorded blockers') as evidence_check from v_term_readiness where panel_id=$1 order by position,expert"
       },
       {
         "title": "Notes",
-        "sql": "select body,actor,created_at from notes where panel_id=$1 order by created_at"
+        "sql": "select body,actor,to_char(created_at at time zone 'UTC','YYYY-MM-DD HH24:MI') as recorded_utc from notes where panel_id=$1 order by created_at"
       }
     ]
   },
@@ -30,7 +30,7 @@
         "title": "Recorded term",
         "layout": "record",
         "note": "Internal draft. Proposed and blocked appointments are not approved. Verify before issue.",
-        "sql": "select code,panel,expert,position,starts_on,ends_on,status,blockers from v_term_readiness where id=$1"
+        "sql": "select code,panel,expert,position,starts_on,ends_on,status,coalesce(nullif(array_to_string(blockers,'; '),''),'No recorded blockers') as evidence_check from v_term_readiness where id=$1"
       },
       {
         "title": "Decision evidence",
@@ -47,7 +47,7 @@
       {
         "title": "Evidence review",
         "note": "Record checks, not a certificate of compliance.",
-        "sql": "select code,expert,status,blockers from v_term_readiness where panel_id=$1 order by expert"
+        "sql": "select code,expert,status,coalesce(nullif(array_to_string(blockers,'; '),''),'No recorded blockers') as evidence_check from v_term_readiness where panel_id=$1 order by expert"
       }
     ]
   }
