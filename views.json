@@ -1,13 +1,32 @@
 [
   {
-    "name": "week",
-    "title": "This week",
-    "subtitle": "Expert Panels for Claude Code: what needs attention, rendered by npm run view",
+    "name": "panel-desk",
+    "title": "Panel coverage",
+    "subtitle": "Coverage on the displayed date. Readiness requires evidence through each term end.",
     "sections": [
       {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
+        "title": "Positions to cover",
+        "sql": "select code,panel,position,coverage_on,required,accepted,ready,gap from v_panel_coverage order by code,position"
+      }
+    ]
+  },
+  {
+    "name": "renewals",
+    "title": "Term renewals",
+    "sections": [
+      {
+        "title": "Next sixty days",
+        "sql": "select code,panel,expert,position,ends_on from v_term_readiness where status='accepted' and ends_on between current_date and current_date+60 order by ends_on"
+      }
+    ]
+  },
+  {
+    "name": "evidence-desk",
+    "title": "Panel evidence and follow-ups",
+    "sections": [
+      {
+        "title": "Requires attention",
+        "sql": "select kind,code,panel,subject,issue,due_on from v_attention order by due_on"
       }
     ]
   }

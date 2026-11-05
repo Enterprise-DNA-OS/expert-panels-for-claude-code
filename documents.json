@@ -1,11 +1,54 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
-    "file": "name",
+    "name": "panel-brief",
+    "title": "Panel composition working paper",
+    "for_each": "select id,code from panels order by code",
+    "file": "code",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      {
+        "title": "Mandate",
+        "layout": "record",
+        "sql": "select code,name,purpose,owner,starts_on,ends_on from panels where id=$1"
+      },
+      {
+        "title": "Appointments",
+        "sql": "select code,expert,position,starts_on,ends_on,status,blockers from v_term_readiness where panel_id=$1 order by position,expert"
+      },
+      {
+        "title": "Notes",
+        "sql": "select body,actor,created_at from notes where panel_id=$1 order by created_at"
+      }
+    ]
+  },
+  {
+    "name": "appointment",
+    "title": "Appointment working paper",
+    "for_each": "select id,code from terms order by code",
+    "file": "code",
+    "sections": [
+      {
+        "title": "Recorded term",
+        "layout": "record",
+        "note": "Internal draft. Proposed and blocked appointments are not approved. Verify before issue.",
+        "sql": "select code,panel,expert,position,starts_on,ends_on,status,blockers from v_term_readiness where id=$1"
+      },
+      {
+        "title": "Decision evidence",
+        "sql": "select decision_evidence from terms where id=$1"
+      }
+    ]
+  },
+  {
+    "name": "declaration-check",
+    "title": "Panel declaration checklist",
+    "for_each": "select id,code from panels order by code",
+    "file": "code",
+    "sections": [
+      {
+        "title": "Evidence review",
+        "note": "Record checks, not a certificate of compliance.",
+        "sql": "select code,expert,status,blockers from v_term_readiness where panel_id=$1 order by expert"
+      }
     ]
   }
 ]
